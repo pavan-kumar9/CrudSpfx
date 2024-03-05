@@ -1,9 +1,10 @@
 import * as React from 'react';
-import { TextField, Label, Panel, PrimaryButton, DetailsList, IconButton, IIconProps } from "@fluentui/react";
+import { TextField, Label, Panel, PrimaryButton, DetailsList, IconButton, IIconProps, PanelType, Dialog, DialogFooter, DialogType } from "@fluentui/react";
 import { Web } from "sp-pnp-js";
 import { ICrudProps } from './ICrudProps';
 import { NormalPeoplePicker } from '@fluentui/react/lib/Pickers';
 import { IPersonaProps } from '@fluentui/react/lib/Persona';
+import styles from './Crud.module.scss';
 
 export interface IEmployee {
   ID: number;
@@ -19,6 +20,13 @@ export interface IEmployee {
 //   }
 // })
 
+const dialogProps = {
+  type: DialogType.normal,
+  title: 'Successful!',
+  closeButtonArialLabel: 'Close',
+  subText: 'Hi! How are you?'
+}
+
 const editIcon: IIconProps = { iconName: 'Edit' }
 const deleteIcon: IIconProps = { iconName: 'Delete' }
 const addIcon: IIconProps = { iconName: 'Add' }
@@ -31,6 +39,7 @@ const CRUDtwo: React.FC<ICrudProps> = () => {
   const [selectedPeople, setSelectedPeople] = React.useState<IPersonaProps[]>([]);
   const [isEditMode, setIsEditMode] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState<string>('');
+  const [openDialog, setOpenDialog] = React.useState(true)
 
   const fetchData = async (): Promise<void> => {
     const web = new Web(webURL);
@@ -44,7 +53,7 @@ const CRUDtwo: React.FC<ICrudProps> = () => {
           try {
             // const single = await web.siteUsers.getById(item.EmployeeNameId).get();
             // console.log(single);
-            
+
             const userDetails = await web.siteUsers.getById(item.EmployeeNameId).get();
             console.log(item.Ename);
             item.Ename = userDetails.Title
@@ -89,7 +98,7 @@ const CRUDtwo: React.FC<ICrudProps> = () => {
 
     try {
       await list.items.add(data);
-      alert("Created Successfully");
+      // alert("Created Successfully");
       setErrorMessage('');
       setSelectedEmployee(null);
       await fetchData();
@@ -119,7 +128,8 @@ const CRUDtwo: React.FC<ICrudProps> = () => {
         EmployeeNameId: { results: alluser },
       });
 
-      alert("Updated Successfully");
+      // alert("Updated Successfully");
+      setOpenDialog(false)
       setErrorMessage('');
       const updatedItem = await list.items.getById(selectedEmployee.ID).get();
       setSelectedEmployee((prevEmployee) => ({
@@ -198,21 +208,23 @@ const CRUDtwo: React.FC<ICrudProps> = () => {
 
   return (
     <div>
-      <h1>CRUD Operations - 2</h1>
+      <h1 className={styles.heading}>CRUD Operations - 2</h1>
       <div style={{ display: "flex", gap: '10px' }}>
-        <PrimaryButton iconProps={addIcon} text="Create" onClick={() => openCreatePanel()} />
+        <PrimaryButton className={styles.heading} iconProps={addIcon} text="Create" onClick={() => openCreatePanel()} />
 
       </div>
 
       <Panel
         isOpen={isPanelOpen}
         headerText={isEditMode ? "Update Employee" : "Create Employee"}
+        type={PanelType.custom}
+        customWidth='40%'
         closeButtonAriaLabel="Close"
         onDismiss={() => setIsPanelOpen(false)}
       >
         <form>
           <div>
-            <Label>Title</Label>
+            <Label>Desigantion</Label>
             <TextField
               value={selectedEmployee?.Title || ''}
               onChange={(ev, value) => setSelectedEmployee((prevEmployee) => ({ ...prevEmployee!, Title: value || '' }))}
@@ -233,10 +245,23 @@ const CRUDtwo: React.FC<ICrudProps> = () => {
             />
             {errorMessage && <div style={{ color: 'red' }}>{errorMessage}</div>}
           </div>
-          <div style={{ display: "flex", gap: '5  px' }}>
-            <PrimaryButton text={isEditMode ? "Update" : "Create"} onClick={createOrUpdateData} />
+          <div style={{ display: "flex", textAlign: 'center', gap: '5px' }}>
+            <PrimaryButton className={styles.btn} text={isEditMode ? "Update" : "Create"} onClick={createOrUpdateData} />
           </div> </form>
       </Panel>
+
+      <Dialog
+        hidden={openDialog}
+        dialogContentProps={dialogProps}
+      >
+        <DialogFooter>
+
+          <PrimaryButton onClick={() => setOpenDialog(true)} text='Okay' />
+
+        </DialogFooter>
+
+
+      </Dialog>
 
 
       <div>
@@ -290,42 +315,3 @@ const CRUDtwo: React.FC<ICrudProps> = () => {
   );
 };
 export default CRUDtwo;
-
-
-/*
-
-60m SE
-
-2m
-
-if software doesn't wear out, why does it detoriate?
-
-Define Stress Testing
-
-Compare Process and Product metrics
-
-Differentiate Economic feasibility with Financial fesibility.
-
-
-
-5m
-
-compare function oriented design with object oriented design. 
-
-if you have to develop a social media application, what process model will you choose? Justify your answer.
-
-Explain the concept of software maintenance and its different types. Discuss the challenges associated with software maintenance.
-
-Source Code Metrics
-
-Compare the agile and waterfall software development methodologies. Discuss the advantages and disadvantages of each approach.
-
-What is a Test Case? Derive a set of test cases for sorting an array of Strings.
-
-10m
-1. Discuss the importance of software requirements engineering in the software development process. Explain various techniques used for requirements elicitation. 
-
-
-
-
-*/
